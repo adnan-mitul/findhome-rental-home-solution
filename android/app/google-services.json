@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "681361124073",
+    "project_id": "findhome-rental-home-solution",
+    "storage_bucket": "findhome-rental-home-solution.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:681361124073:android:3c82e12513d3bfa0a25e78",
+        "android_client_info": {
+          "package_name": "com.example.find_home"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXu9vzORMQoCExtcUdUvU-q8x4HHtCoMY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
