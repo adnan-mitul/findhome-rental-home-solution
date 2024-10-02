@@ -13,22 +13,30 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String? _selectedFilter;
+  String? _selectedLocation;
 
   Future<List<Map<String, dynamic>>> _fetchHomes() async {
     final querySnapshot =
-        await FirebaseFirestore.instance.collection('homes').get();
+    await FirebaseFirestore.instance.collection('homes').get();
     return querySnapshot.docs
         .map((doc) => {
-              'imagePath': doc['images'][0],
-              'houseType': doc['houseType'],
-              'location': doc['location'],
-              'bedrooms': (doc['bedrooms'] as num).toInt(),
-              'bathrooms': (doc['bathrooms'] as num).toInt(),
-              'balconies': (doc['balconies'] as num).toInt(),
-              'description': doc['description'],
-              'price': (doc['price'] as num).toInt(),
-            })
+      'imagePath': doc['images'][0],
+      'houseType': doc['houseType'],
+      'location': doc['location'],
+      'bedrooms': (doc['bedrooms'] as num).toInt(),
+      'bathrooms': (doc['bathrooms'] as num).toInt(),
+      'balconies': (doc['balconies'] as num).toInt(),
+      'description': doc['description'],
+      'price': (doc['price'] as num).toInt(),
+    })
         .toList();
+  }
+
+  List<Map<String, dynamic>> _filterHomes(List<Map<String, dynamic>> homes) {
+    if (_selectedLocation != null) {
+      homes = homes.where((home) => home['location'] == _selectedLocation).toList();
+    }
+    return homes;
   }
 
   List<Map<String, dynamic>> _sortHomes(List<Map<String, dynamic>> homes) {
@@ -69,6 +77,34 @@ class _HomePageState extends State<HomePage> {
               color: Colors.blue,
             ),
           ),
+          DropdownButton<String>(
+            hint: const Text('Select Location'),
+            value: _selectedLocation,
+            items: <String>[
+              'Abdullahpur', 'Adabor', 'Agargaon', 'Airport', 'Banani',
+              'Bashabo', 'Bashundhara R/A', 'Badda', 'Cantonment', 'Dhanmondi',
+              'ECB', 'Farmgate', 'Gulshan-1', 'Gulshan-2', 'Hazaribagh', 'Jatrabari',
+              'Kafrul', 'Khilgaon', 'Khilkhet', 'Kotoali','Lalbag', 'Mirpur',
+              'Mohakhali', 'Mohammadpur', 'Mohanagar Project', 'Modhubag', 'Motijheel',
+              'Nikunja', 'Niketon', 'Paltan', 'Rajabazar', 'Ramna',
+              'Sadarghat', 'Shabujbagh', 'Shyamoli', 'Tejgaon', 'Tikatuli',
+              'Uttara', 'Uttara East', 'Uttara West', 'Wari', 'West Dhanmondi', ] // Add your locations here
+                .map((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(value),
+              );
+            }).toList(),
+            onChanged: (newValue) {
+              setState(() {
+                _selectedLocation = newValue;
+              });
+            },
+            underline: Container(
+              height: 2,
+              color: Colors.blue,
+            ),
+          ),
         ],
       ),
     );
@@ -93,7 +129,8 @@ class _HomePageState extends State<HomePage> {
               }
 
               final offerHouselist = snapshot.data!;
-              final sortedHomes = _sortHomes(offerHouselist);
+              final filteredHomes = _filterHomes(offerHouselist);
+              final sortedHomes = _sortHomes(filteredHomes);
 
               return SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
@@ -129,7 +166,7 @@ class _HomePageState extends State<HomePage> {
                       shrinkWrap: true,
                       itemCount: sortedHomes.length,
                       gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
+                      const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,
                         mainAxisSpacing: 8,
                         crossAxisSpacing: 8,

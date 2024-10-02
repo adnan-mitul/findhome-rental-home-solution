@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:find_home/catagories_pages/add_helping_hand.dart';
+import 'package:find_home/catagories_pages/helping_hand/add_helping_hand.dart';
 import 'package:flutter/material.dart';
 
 class MaidPage extends StatefulWidget {

@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -16,13 +15,24 @@ class _AddHomePageState extends State<AddHomePage> {
   int _bathrooms = 1;
   int _balconies = 0;
   List<File> _images = [];
-  double _price = 0; // Default price starts from 0 TK
+  double _price = 0;
   final picker = ImagePicker();
-  final TextEditingController _locationController = TextEditingController();
+  String? _selectedLocation;
   final TextEditingController _descriptionController = TextEditingController();
   bool _uploading = false;
 
-  // Function to pick multiple images with a limit of 7
+  final List<String> _locations = [
+    'Abdullahpur', 'Adabor', 'Agargaon', 'Airport', 'Banani',
+    'Bashabo', 'Bashundhara R/A', 'Badda', 'Cantonment', 'Dhanmondi',
+    'ECB', 'Farmgate', 'Gulshan-1', 'Gulshan-2', 'Hazaribagh', 'Jatrabari',
+    'Kafrul', 'Khilgaon', 'Khilkhet', 'Kotoali','Lalbag', 'Mirpur',
+    'Mohakhali', 'Mohammadpur', 'Mohanagar Project', 'Modhubag', 'Motijheel',
+    'Nikunja', 'Niketon', 'Paltan', 'Rajabazar', 'Ramna',
+    'Sadarghat', 'Shabujbagh', 'Shyamoli', 'Tejgaon', 'Tikatuli',
+    'Uttara', 'Uttara East', 'Uttara West', 'Wari', 'West Dhanmondi',
+
+  ];
+
   Future<void> _getImages() async {
     final pickedFiles = await picker.pickMultiImage();
     if (pickedFiles != null) {
@@ -34,12 +44,12 @@ class _AddHomePageState extends State<AddHomePage> {
       }
       setState(() {
         _images.addAll(
-            pickedFiles.map((pickedFile) => File(pickedFile.path)).toList());
+          pickedFiles.map((pickedFile) => File(pickedFile.path)).toList(),
+        );
       });
     }
   }
 
-  // Function to upload details including images and description to Firestore
   Future<void> _uploadDetails() async {
     setState(() {
       _uploading = true;
@@ -49,8 +59,7 @@ class _AddHomePageState extends State<AddHomePage> {
       List<String> imageUrls = [];
       for (File image in _images) {
         String fileName = image.path.split('/').last;
-        Reference ref =
-        FirebaseStorage.instance.ref().child('images/$fileName');
+        Reference ref = FirebaseStorage.instance.ref().child('images/$fileName');
         UploadTask uploadTask = ref.putFile(image);
         TaskSnapshot taskSnapshot = await uploadTask;
         String downloadUrl = await taskSnapshot.ref.getDownloadURL();
@@ -62,26 +71,25 @@ class _AddHomePageState extends State<AddHomePage> {
         'bedrooms': _bedrooms,
         'bathrooms': _bathrooms,
         'balconies': _balconies,
-        'location': _locationController.text,
+        'location': _selectedLocation,
         'description': _descriptionController.text,
         'images': imageUrls,
-        'price': _price, // Include price in the uploaded details
+        'price': _price,
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Details uploaded successfully!')),
       );
 
-      // Clear form after successful upload
       setState(() {
         _houseType = null;
         _bedrooms = 1;
         _bathrooms = 1;
         _balconies = 0;
         _images.clear();
-        _locationController.clear();
+        _selectedLocation = null;
         _descriptionController.clear();
-        _price = 0; // Reset price to 0 TK
+        _price = 0;
         _uploading = false;
       });
     } catch (e) {
@@ -98,51 +106,46 @@ class _AddHomePageState extends State<AddHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add Your Home'),
+        title: Text('Add Your Home', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.indigo,
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Dropdown for house type
-            DropdownButtonFormField<String>(
-              value: _houseType,
-              hint: Text('Select House Type'),
-              items: ['Family Flat', 'Sub-late Room', 'Bachelor Seat']
-                  .map((type) => DropdownMenuItem<String>(
-                value: type,
-                child: Text(type),
-              ))
-                  .toList(),
-              onChanged: (value) {
+            _buildSectionTitle('House Type'),
+            _buildDropdownButton(
+              _houseType,
+              'Select House Type',
+              ['Family Flat', 'Sub-late Room', 'Bachelor Seat'],
+                  (value) {
                 setState(() {
                   _houseType = value;
                 });
               },
             ),
-            SizedBox(height: 16.0),
+            SizedBox(height: 20.0),
 
-            // Input for location
-            TextFormField(
-              controller: _locationController,
-              decoration: InputDecoration(
-                labelText: 'Location',
-                border: OutlineInputBorder(),
-              ),
+            // Dropdown for location selection
+            _buildSectionTitle('Location'),
+            _buildDropdownButton(
+              _selectedLocation,
+              'Select Location',
+              _locations,
+                  (value) {
+                setState(() {
+                  _selectedLocation = value;
+                });
+              },
             ),
-            SizedBox(height: 16.0),
+            SizedBox(height: 20.0),
 
             // Input for description
-            TextFormField(
-              controller: _descriptionController,
-              decoration: InputDecoration(
-                labelText: 'Description',
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 5,
-            ),
-            SizedBox(height: 16.0),
+            _buildSectionTitle('Description'),
+            _buildDescriptionInput(),
+            SizedBox(height: 20.0),
 
             // Bedrooms, Bathrooms, Balconies input
             if (_houseType == 'Family Flat' || _houseType == 'Sub-late Room')
@@ -157,7 +160,7 @@ class _AddHomePageState extends State<AddHomePage> {
                       _bedrooms++;
                     });
                   }),
-                  SizedBox(height: 16.0),
+                  SizedBox(height: 20.0),
                   _buildCounterRow('Bathrooms', _bathrooms, () {
                     setState(() {
                       if (_bathrooms > 1) _bathrooms--;
@@ -167,7 +170,7 @@ class _AddHomePageState extends State<AddHomePage> {
                       _bathrooms++;
                     });
                   }),
-                  SizedBox(height: 16.0),
+                  SizedBox(height: 20.0),
                   _buildCounterRow('Balconies', _balconies, () {
                     setState(() {
                       if (_balconies > 0) _balconies--;
@@ -179,55 +182,85 @@ class _AddHomePageState extends State<AddHomePage> {
                   }),
                 ],
               ),
-            SizedBox(height: 16.0),
+            SizedBox(height: 20.0),
 
             // Slider for price selection
-            Text('Price: ${_price.toStringAsFixed(2)} TK'),
-            Container(
-              width: double.infinity, // Make the slider full width
-              child: Slider(
-                value: _price,
-                min: 0, // Start from 0 TK
-                max: 50000, // Adjust maximum as necessary
-                onChanged: (double value) {
-                  setState(() {
-                    _price = value;
-                  });
-                },
-                divisions: 100, // Increased divisions for more control
-                label: '${_price.round()} TK',
-              ),
+            _buildSectionTitle('Price'),
+            Text(
+              'Price: ${_price.toStringAsFixed(2)} TK',
+              style: TextStyle(fontWeight: FontWeight.w500),
             ),
-            SizedBox(height: 16.0),
+            Slider(
+              value: _price,
+              min: 0,
+              max: 50000,
+              onChanged: (double value) {
+                setState(() {
+                  _price = value;
+                });
+              },
+              divisions: 100,
+              activeColor: Colors.indigo,
+              inactiveColor: Colors.indigo[100],
+              label: '${_price.round()} TK',
+            ),
+            SizedBox(height: 20.0),
 
             // Image picking button
-            ElevatedButton(
+            ElevatedButton.icon(
               onPressed: _getImages,
-              child: Text('Add Images'),
+              icon: Icon(Icons.add_a_photo),
+              label: Text('Add Images'),
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white, backgroundColor: Colors.indigo,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
             ),
-            SizedBox(height: 16.0),
+            SizedBox(height: 20.0),
 
             // Display selected images
             _images.isNotEmpty
                 ? Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: _images
-                  .map((image) => Image.file(
-                image,
-                height: 200,
-                fit: BoxFit.cover,
+                  .map((image) => Container(
+                margin: EdgeInsets.only(bottom: 10.0),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.indigo, width: 2),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.file(
+                    image,
+                    height: 200,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ))
                   .toList(),
             )
                 : Container(),
-            SizedBox(height: 16.0),
+            SizedBox(height: 20.0),
 
             // Upload button
             ElevatedButton(
               onPressed: _uploadDetails,
               child: _uploading
-                  ? CircularProgressIndicator()
+                  ? CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              )
                   : Text('Upload Details'),
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white, backgroundColor: Colors.indigo,
+                padding: EdgeInsets.symmetric(vertical: 15),
+                textStyle: TextStyle(fontSize: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
             ),
           ],
         ),
@@ -235,22 +268,81 @@ class _AddHomePageState extends State<AddHomePage> {
     );
   }
 
-  // Reusable widget for bedroom, bathroom, and balcony counters
-  Widget _buildCounterRow(String label, int count, VoidCallback onDecrement,
-      VoidCallback onIncrement) {
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: TextStyle(
+        fontSize: 18.0,
+        fontWeight: FontWeight.bold,
+        color: Colors.indigo,
+      ),
+    );
+  }
+
+  Widget _buildDropdownButton(String? value, String hint, List<String> items,
+      ValueChanged<String?> onChanged) {
+    return DropdownButtonFormField<String>(
+      value: value,
+      decoration: InputDecoration(
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        contentPadding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
+      ),
+      hint: Text(hint),
+      items: items.map((item) {
+        return DropdownMenuItem<String>(
+          value: item,
+          child: Text(item),
+        );
+      }).toList(),
+      onChanged: onChanged,
+    );
+  }
+
+  Widget _buildDescriptionInput() {
+    return TextFormField(
+      controller: _descriptionController,
+      decoration: InputDecoration(
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+       // labelText: 'Description',
+        alignLabelWithHint: true,
+        contentPadding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 15.0),
+      ),
+      maxLines: 5,
+    );
+  }
+
+  Widget _buildCounterRow(
+      String label,
+      int value,
+      VoidCallback onDecrement,
+      VoidCallback onIncrement,
+      ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text('$label: $count'),
+        Text(
+          label,
+          style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w500),
+        ),
         Row(
           children: [
             IconButton(
-              icon: Icon(Icons.remove),
               onPressed: onDecrement,
+              icon: Icon(Icons.remove_circle_outline),
+              color: Colors.indigo,
+            ),
+            Text(
+              value.toString(),
+              style: TextStyle(fontSize: 16.0),
             ),
             IconButton(
-              icon: Icon(Icons.add),
               onPressed: onIncrement,
+              icon: Icon(Icons.add_circle_outline),
+              color: Colors.indigo,
             ),
           ],
         ),

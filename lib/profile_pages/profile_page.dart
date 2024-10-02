@@ -57,9 +57,9 @@ class _ProfilePageState extends State<ProfilePage> {
         });
       } else {
         setState(() {
-          _name = 'No user data found';
-          _email = 'No user data found';
-          _mobile = 'No user data found';
+          _name = '';
+          _email = '';
+          _mobile = '';
         });
       }
     } catch (e) {

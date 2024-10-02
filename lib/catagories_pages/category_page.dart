@@ -1,45 +1,9 @@
-import 'package:find_home/catagories_pages/helping_hand_page.dart';
+import 'package:find_home/catagories_pages/other_pages.dart';
+import 'package:find_home/catagories_pages/sublet_page.dart';
 import 'package:flutter/material.dart';
-
-class FamilyPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Family Page')),
-      body: Center(child: Text('Family Page')),
-    );
-  }
-}
-
-class BachelorsPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Bachelors Page')),
-      body: Center(child: Text('Bachelors Page')),
-    );
-  }
-}
-
-class SubletsPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Sublets Page')),
-      body: Center(child: Text('Sublets Page')),
-    );
-  }
-}
-
-class OthersPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Others Page')),
-      body: Center(child: Text('Others Page')),
-    );
-  }
-}
+import 'package:find_home/catagories_pages/bachelor_page.dart'; // BachelorsPage
+import 'package:find_home/catagories_pages/family_page.dart'; // FamilyPage
+import 'package:find_home/catagories_pages/helping_hand/helping_hand_page.dart'; // MaidPage
 
 class CategoryPage extends StatefulWidget {
   const CategoryPage({super.key});
@@ -52,13 +16,9 @@ class _CategoryPageState extends State<CategoryPage> {
   final List<Map<String, dynamic>> options = [
     {'icon': Icons.family_restroom, 'label': 'Family', 'route': FamilyPage()},
     {'icon': Icons.person, 'label': 'Bachelors', 'route': BachelorsPage()},
-    {'icon': Icons.house_siding, 'label': 'Sublets', 'route': SubletsPage()},
+    {'icon': Icons.house_siding, 'label': 'Sublets', 'route': SubletPage()},
     {'icon': Icons.cleaning_services, 'label': 'Maid', 'route': MaidPage()},
-    {
-      'icon': Icons.miscellaneous_services,
-      'label': 'Others',
-      'route': OthersPage()
-    },
+    {'icon': Icons.miscellaneous_services, 'label': 'Others', 'route': OtherPage()},
   ];
 
   @override
@@ -82,15 +42,13 @@ class _CategoryPageState extends State<CategoryPage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Logo aligned with category boxes
-            SizedBox(
-              height: 100.0, // Adjust height for alignment
-            ),
-            const SizedBox(height: 10), // Space between logo and buttons
+            // Adjusted logo space
+            SizedBox(height: 100.0),
+            const SizedBox(height: 10),
             Expanded(
               child: GridView.builder(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3, // Changed to 3 columns
+                  crossAxisCount: 3, // 3 columns
                   crossAxisSpacing: 16.0,
                   mainAxisSpacing: 16.0,
                 ),
@@ -116,8 +74,7 @@ class OptionCard extends StatelessWidget {
   final String label;
   final Widget route;
 
-  const OptionCard(
-      {required this.icon, required this.label, required this.route});
+  const OptionCard({required this.icon, required this.label, required this.route});
 
   @override
   Widget build(BuildContext context) {
@@ -133,7 +90,7 @@ class OptionCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.cyan, // Button color set to cyan
+            color: Colors.cyan, // Button color cyan
             borderRadius: BorderRadius.circular(10),
             boxShadow: [
               BoxShadow(
@@ -144,15 +101,12 @@ class OptionCard extends StatelessWidget {
               ),
             ],
           ),
-          height: 100, // Adjusted height of the button
-          padding:
-              const EdgeInsets.all(12.0), // Padding adjusted for better layout
+          height: 100,
+          padding: const EdgeInsets.all(12.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon,
-                  size: 30,
-                  color: Colors.white), // Icon color remains unchanged
+              Icon(icon, size: 30, color: Colors.white),
               const SizedBox(height: 8),
               Text(
                 label,

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 
-
 class DetailsPage extends StatelessWidget {
   final String imagePath;
   final String name;
